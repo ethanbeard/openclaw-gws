@@ -95,7 +95,7 @@ export class GmailWatcher {
     });
     this.proc = child;
 
-    child.stdout?.on("data", (chunk: Buffer) => {
+    child.stdout?.on("data", (chunk: string | Buffer) => {
       this.lineBuffer += chunk.toString();
       const lines = this.lineBuffer.split("\n");
       // Keep incomplete last line in buffer
@@ -108,7 +108,7 @@ export class GmailWatcher {
       }
     });
 
-    child.stderr?.on("data", (chunk: Buffer) => {
+    child.stderr?.on("data", (chunk: string | Buffer) => {
       const msg = chunk.toString().trim();
       if (msg) {
         // gws prints status messages to stderr (e.g. "Listening for new emails...")
@@ -122,7 +122,7 @@ export class GmailWatcher {
       }
     });
 
-    child.on("error", (err) => {
+    child.on("error", (err: Error) => {
       if (err.message.includes("ENOENT")) {
         this._lastError = "gws not found. Install from https://github.com/googleworkspace/cli";
         this.opts.onError(this._lastError);
@@ -135,7 +135,7 @@ export class GmailWatcher {
       this.scheduleRestart();
     });
 
-    child.on("exit", (code) => {
+    child.on("exit", (code: number | null) => {
       this.proc = null;
       if (this.stopped) return;
       this._lastError = `gws exited with code ${code}`;

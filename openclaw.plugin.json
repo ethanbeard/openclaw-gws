@@ -11,6 +11,11 @@
         "type": "string",
         "description": "GCP project ID (or set GOOGLE_WORKSPACE_PROJECT_ID env var)"
       },
+      "agentId": {
+        "type": "string",
+        "default": "main",
+        "description": "OpenClaw agent ID to deliver emails to"
+      },
       "debounceSeconds": {
         "type": "number",
         "default": 30,

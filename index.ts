@@ -11,6 +11,45 @@ const plugin = {
   register(api: OpenClawPluginApi) {
     let watcher: GmailWatcher | null = null;
 
+    function createAndStartWatcher() {
+      const cfg = parseConfig((api.pluginConfig ?? {}) as Record<string, unknown>);
+
+      if (!cfg.project) {
+        api.logger.error("[gws] No GCP project configured. Set 'project' in plugin config or GOOGLE_WORKSPACE_PROJECT_ID env var.");
+        return null;
+      }
+
+      const w = new GmailWatcher({
+        project: cfg.project,
+        onEvent: (event) => {
+          api.logger.info(`[gws] New email from ${event.from}: ${event.subject}`);
+          enqueue(event, {
+            debounceSeconds: cfg.debounceSeconds,
+            maxBatchSize: cfg.maxBatchSize,
+            agentId: cfg.agentId,
+            onLog: (msg) => api.logger.info(`[gws] ${msg}`),
+            onError: (msg) => api.logger.error(`[gws] ${msg}`),
+          });
+        },
+        onError: (msg) => api.logger.error(`[gws] ${msg}`),
+        onStatus: (msg) => api.logger.info(`[gws] ${msg}`),
+      });
+
+      w.start();
+      api.logger.info(`[gws] Gmail watcher started (project: ${cfg.project}, agent: ${cfg.agentId})`);
+      return w;
+    }
+
+    function updatePausedConfig(paused: boolean) {
+      const config = api.runtime.config.loadConfig() ?? {};
+      config.plugins ??= {};
+      config.plugins.entries ??= {};
+      config.plugins.entries.gws ??= {};
+      config.plugins.entries.gws.config ??= {};
+      config.plugins.entries.gws.config.paused = paused;
+      api.runtime.config.writeConfigFile(config);
+    }
+
     // --- Tools ---
 
     api.registerTool({
@@ -19,7 +58,7 @@ const plugin = {
       parameters: emptyObject,
       async execute() {
         if (!watcher) {
-          return { content: [{ type: "text", text: "Gmail watcher not initialized." }] };
+          return { content: [{ type: "text", text: "Gmail watcher not running." }] };
         }
 
         const lines = [
@@ -37,17 +76,11 @@ const plugin = {
       description: "Pause Gmail watching. Emails will not be delivered until resumed.",
       parameters: emptyObject,
       async execute() {
-        if (watcher) watcher.stop();
-
-        const config = api.runtime.config.loadConfig();
-        const pluginConfig = config?.plugins?.entries?.gws?.config ?? {};
-        pluginConfig.paused = true;
-        config.plugins ??= {};
-        config.plugins.entries ??= {};
-        config.plugins.entries.gws ??= {};
-        config.plugins.entries.gws.config = pluginConfig;
-        api.runtime.config.writeConfigFile(config);
-
+        if (watcher) {
+          watcher.stop();
+          watcher = null;
+        }
+        updatePausedConfig(true);
         return { content: [{ type: "text", text: "Gmail watching paused." }] };
       },
     });
@@ -57,16 +90,17 @@ const plugin = {
       description: "Resume Gmail watching after a pause.",
       parameters: emptyObject,
       async execute() {
-        const config = api.runtime.config.loadConfig();
-        const pluginConfig = config?.plugins?.entries?.gws?.config ?? {};
-        pluginConfig.paused = false;
-        config.plugins ??= {};
-        config.plugins.entries ??= {};
-        config.plugins.entries.gws ??= {};
-        config.plugins.entries.gws.config = pluginConfig;
-        api.runtime.config.writeConfigFile(config);
+        updatePausedConfig(false);
 
-        if (watcher) watcher.start();
+        if (!watcher) {
+          watcher = createAndStartWatcher();
+          if (!watcher) {
+            return { content: [{ type: "text", text: "Failed to start watcher. Check plugin config (project ID required)." }] };
+          }
+        } else {
+          watcher.start();
+        }
+
         return { content: [{ type: "text", text: "Gmail watching resumed." }] };
       },
     });
@@ -83,34 +117,7 @@ const plugin = {
           return;
         }
 
-        if (!cfg.project) {
-          api.logger.error("[gws] No GCP project configured. Set 'project' in plugin config or GOOGLE_WORKSPACE_PROJECT_ID env var.");
-          return;
-        }
-
-        // Determine which OpenClaw agent to deliver to
-        const config = api.runtime.config.loadConfig();
-        const agents = config?.agents?.list ?? [];
-        const agentId = agents[0]?.id ?? "main";
-
-        watcher = new GmailWatcher({
-          project: cfg.project,
-          onEvent: (event) => {
-            api.logger.info(`[gws] New email from ${event.from}: ${event.subject}`);
-            enqueue(event, {
-              debounceSeconds: cfg.debounceSeconds,
-              maxBatchSize: cfg.maxBatchSize,
-              agentId,
-              onLog: (msg) => api.logger.info(`[gws] ${msg}`),
-              onError: (msg) => api.logger.error(`[gws] ${msg}`),
-            });
-          },
-          onError: (msg) => api.logger.error(`[gws] ${msg}`),
-          onStatus: (msg) => api.logger.info(`[gws] ${msg}`),
-        });
-
-        watcher.start();
-        api.logger.info(`[gws] Gmail watcher started (project: ${cfg.project})`);
+        watcher = createAndStartWatcher();
       },
       stop: () => {
         if (watcher) {

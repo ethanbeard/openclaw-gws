@@ -12,6 +12,13 @@
   "openclaw": {
     "extensions": ["./index.ts"]
   },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
   "license": "MIT",
   "repository": {
     "type": "git",
