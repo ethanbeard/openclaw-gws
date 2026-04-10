@@ -6,21 +6,44 @@ Zero tokens burned between emails. Agent only wakes when something arrives.
 
 ## Prerequisites
 
-1. [gws](https://github.com/googleworkspace/cli) installed and authenticated:
+### 1. Install gws and gcloud
 
 ```bash
-npm install -g @anthropic-ai/gws
-gws auth setup
-gws auth login
+npm install -g @googleworkspace/cli
 ```
 
-2. A GCP project with the Gmail API enabled:
+You also need the [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed. After installing, open a new terminal or run `source ~/.zshrc` so it's in your PATH.
+
+### 2. Set up OAuth
+
+```bash
+gws auth setup
+```
+
+This creates a GCP project and OAuth client. You need to add your Gmail address as a test user in the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) (required while the app is unverified):
+
+1. Go to your GCP project's OAuth consent screen
+2. Under **Test users**, click **Add users**
+3. Add your Gmail address
+4. Save
+
+### 3. Authenticate with file-based storage
+
+The plugin runs `gws` as a background subprocess of the OpenClaw gateway. The OS keyring requires user interaction, which isn't available in that context. You must use file-based credential storage:
+
+```bash
+GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file gws auth login
+```
+
+This opens a browser for Google OAuth. After authorizing, credentials are saved to `~/.config/gws/credentials.enc`. The plugin automatically sets this env var when spawning `gws`, so you only need to do this once.
+
+### 4. Enable the Gmail API
 
 ```bash
 gcloud services enable gmail.googleapis.com --project YOUR_PROJECT_ID
 ```
 
-Note: `gws auth setup` creates a GCP project and OAuth client for you. You need to add your Gmail address as a test user in the [OAuth consent screen](https://console.cloud.google.com/apis/credentials/consent) while the app is unverified.
+`gws auth setup` prints your project ID. You can also find it with `gcloud config get project`.
 
 ## Install
 
@@ -36,6 +59,8 @@ openclaw config set plugins.entries.gws.config.project YOUR_PROJECT_ID
 
 Or set the environment variable `GOOGLE_WORKSPACE_PROJECT_ID`.
 
+Restart the gateway after configuring.
+
 Optional settings:
 
 ```bash
@@ -45,15 +70,26 @@ openclaw config set plugins.entries.gws.config.maxBatchSize 10
 
 ## How it works
 
-The plugin spawns `gws gmail +watch` as a background process. When a new email arrives in your Gmail inbox, `gws` streams it as NDJSON. The plugin parses the event, extracts From/Subject/snippet, batches emails within a 30-second window, and delivers them to your agent via `openclaw agent --deliver`.
+The plugin spawns `gws gmail +watch` as a background process. When a new email arrives in your Gmail inbox, `gws` streams it as NDJSON via Google Pub/Sub. The plugin parses the event, extracts From/Subject/snippet, batches emails within a 30-second window, and delivers them to your agent via `openclaw agent --deliver`.
 
-If the `gws` process exits (network issue, auth expired), the plugin automatically restarts it with exponential backoff.
+If the `gws` process exits (network issue, auth expired), the plugin automatically restarts it with exponential backoff (1s, 2s, 4s, up to 60s).
 
 ## Agent tools
 
 - `gws_status` — watcher state, last email, errors
 - `gws_pause` — stop watching
 - `gws_resume` — resume watching
+
+## Troubleshooting
+
+**"No credentials found" errors in gateway log:**
+Re-run auth with file-based storage: `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file gws auth login`
+
+**"Access blocked: app has not completed Google verification":**
+Add your Gmail address as a test user in the OAuth consent screen (see Prerequisites step 2).
+
+**gws not found when gateway starts:**
+Make sure `gws` is in your PATH. The gateway inherits the PATH from whatever process starts it (e.g. the OpenClaw Mac app).
 
 ## License
 
