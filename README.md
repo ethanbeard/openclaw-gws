@@ -59,7 +59,7 @@ openclaw config set plugins.entries.gws.config.project YOUR_PROJECT_ID
 
 Or set the environment variable `GOOGLE_WORKSPACE_PROJECT_ID`.
 
-Restart the gateway after configuring.
+Restart or reload the gateway after configuring. If the plugin is already running, changes to `project`, `agentId`, or batching settings are picked up on the next plugin start.
 
 Optional settings:
 
@@ -70,6 +70,8 @@ openclaw config set plugins.entries.gws.config.maxBatchSize 10
 ```
 
 Use `agentId` if you want email deliveries routed to a specific OpenClaw agent instead of the default `main`.
+
+For multi-agent setups, set `agentId` explicitly so emails go to the intended agent.
 
 ## How it works
 
@@ -93,6 +95,15 @@ Add your Gmail address as a test user in the OAuth consent screen (see Prerequis
 
 **gws not found when gateway starts:**
 Make sure `gws` is in your PATH. The gateway inherits the PATH from whatever process starts it (e.g. the OpenClaw Mac app).
+
+## Development
+
+```bash
+npm install
+npm run typecheck
+```
+
+This validates the TypeScript sources and local SDK type stubs before publishing changes.
 
 ## License
 
