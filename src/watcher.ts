@@ -1,5 +1,4 @@
-import { execFile } from "node:child_process";
-import { EventEmitter } from "node:events";
+import { spawn } from "node:child_process";
 import type { ChildProcess } from "node:child_process";
 
 export interface GmailEvent {
@@ -41,7 +40,7 @@ interface WatcherOptions {
   onStatus: (status: string) => void;
 }
 
-export class GmailWatcher extends EventEmitter {
+export class GmailWatcher {
   private proc: ChildProcess | null = null;
   private backoff = 1000;
   private maxBackoff = 60000;
@@ -53,9 +52,7 @@ export class GmailWatcher extends EventEmitter {
   private _lastError: string | null = null;
   private _status: "stopped" | "starting" | "watching" | "reconnecting" = "stopped";
 
-  constructor(private opts: WatcherOptions) {
-    super();
-  }
+  constructor(private opts: WatcherOptions) {}
 
   get status() { return this._status; }
   get lastEvent() { return this._lastEvent; }
@@ -93,8 +90,7 @@ export class GmailWatcher extends EventEmitter {
 
     this.opts.onStatus(`Starting gws ${args.join(" ")}`);
 
-    const child = execFile("gws", args, {
-      maxBuffer: 50 * 1024 * 1024,
+    const child = spawn("gws", args, {
       env: { ...process.env, GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND: "file" },
     });
     this.proc = child;
@@ -128,7 +124,7 @@ export class GmailWatcher extends EventEmitter {
 
     child.on("error", (err) => {
       if (err.message.includes("ENOENT")) {
-        this._lastError = "gws not found. Install: npm install -g @anthropic-ai/gws";
+        this._lastError = "gws not found. Install from https://github.com/googleworkspace/cli";
         this.opts.onError(this._lastError);
         this._status = "stopped";
         this.stopped = true; // Don't retry if binary not found

@@ -15,6 +15,10 @@ let busy = false;
 let deliveryLockExpires = 0;
 const LOCK_TTL = 10 * 60 * 1000; // 10 minutes
 
+// Queue for events that arrive while delivery is in progress
+const queued: GmailEvent[] = [];
+let queuedOpts: DeliverOptions | null = null;
+
 export async function deliverToAgent(
   events: GmailEvent[],
   opts: DeliverOptions,
@@ -26,7 +30,9 @@ export async function deliverToAgent(
   }
 
   if (busy) {
-    opts.onLog(`Delivery busy, queueing ${events.length} events`);
+    queued.push(...events);
+    queuedOpts = opts;
+    opts.onLog(`Delivery busy, queued ${events.length} event(s) (${queued.length} total queued)`);
     return;
   }
 
@@ -59,5 +65,13 @@ export async function deliverToAgent(
     opts.onError(`Delivery failed: ${err.message?.slice(0, 200)}`);
   } finally {
     busy = false;
+
+    // Drain queue if events arrived while we were delivering
+    if (queued.length > 0 && queuedOpts) {
+      const batch = queued.splice(0);
+      const batchOpts = queuedOpts;
+      queuedOpts = null;
+      deliverToAgent(batch, batchOpts);
+    }
   }
 }
