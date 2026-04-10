@@ -48,6 +48,7 @@ export class GmailWatcher extends EventEmitter {
   private restartTimer: ReturnType<typeof setTimeout> | null = null;
   private stopped = false;
   private lineBuffer = "";
+  private errorBuffer = "";
   private _lastEvent: Date | null = null;
   private _lastError: string | null = null;
   private _status: "stopped" | "starting" | "watching" | "reconnecting" = "stopped";
@@ -92,7 +93,10 @@ export class GmailWatcher extends EventEmitter {
 
     this.opts.onStatus(`Starting gws ${args.join(" ")}`);
 
-    const child = execFile("gws", args, { maxBuffer: 50 * 1024 * 1024 });
+    const child = execFile("gws", args, {
+      maxBuffer: 50 * 1024 * 1024,
+      env: { ...process.env, GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND: "file" },
+    });
     this.proc = child;
 
     child.stdout?.on("data", (chunk: Buffer) => {
@@ -149,9 +153,23 @@ export class GmailWatcher extends EventEmitter {
     try {
       json = JSON.parse(line);
     } catch {
-      this.opts.onError(`Failed to parse JSON: ${line.slice(0, 100)}`);
+      // gws issue #680: errors are pretty-printed across multiple lines.
+      // Buffer them and try to parse as a complete JSON object.
+      this.errorBuffer += line;
+      try {
+        const errJson = JSON.parse(this.errorBuffer);
+        this.errorBuffer = "";
+        if (errJson.error?.message) {
+          this.opts.onError(errJson.error.message);
+        }
+      } catch {
+        // Still incomplete, keep buffering
+      }
       return;
     }
+
+    // Successful parse clears any error buffer
+    this.errorBuffer = "";
 
     const event = parseWatchLine(json);
     if (!event) return;
