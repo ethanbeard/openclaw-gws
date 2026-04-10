@@ -11,8 +11,17 @@ const plugin = {
   register(api: OpenClawPluginApi) {
     let watcher: GmailWatcher | null = null;
 
+    function loadCurrentPluginConfig(): Record<string, unknown> {
+      const config = api.runtime.config.loadConfig() ?? {};
+      const persisted = config.plugins?.entries?.gws?.config ?? {};
+      return {
+        ...(api.pluginConfig ?? {}),
+        ...persisted,
+      };
+    }
+
     function createAndStartWatcher() {
-      const cfg = parseConfig((api.pluginConfig ?? {}) as Record<string, unknown>);
+      const cfg = parseConfig(loadCurrentPluginConfig());
 
       if (!cfg.project) {
         api.logger.error("[gws] No GCP project configured. Set 'project' in plugin config or GOOGLE_WORKSPACE_PROJECT_ID env var.");
@@ -110,7 +119,7 @@ const plugin = {
     api.registerService({
       id: "gws-gmail-watcher",
       start: () => {
-        const cfg = parseConfig((api.pluginConfig ?? {}) as Record<string, unknown>);
+        const cfg = parseConfig(loadCurrentPluginConfig());
 
         if (cfg.paused) {
           api.logger.info("[gws] Paused, skipping watch start");

@@ -64,9 +64,12 @@ Restart the gateway after configuring.
 Optional settings:
 
 ```bash
+openclaw config set plugins.entries.gws.config.agentId main
 openclaw config set plugins.entries.gws.config.debounceSeconds 30
 openclaw config set plugins.entries.gws.config.maxBatchSize 10
 ```
+
+Use `agentId` if you want email deliveries routed to a specific OpenClaw agent instead of the default `main`.
 
 ## How it works
 
