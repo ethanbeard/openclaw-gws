@@ -1,0 +1,33 @@
+{
+  "id": "gws",
+  "name": "GWS Gmail Watcher",
+  "description": "Watch Gmail for new emails via gws CLI and deliver to your agent in real-time",
+  "version": "0.1.0",
+  "skills": ["skills"],
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "project": {
+        "type": "string",
+        "description": "GCP project ID (or set GOOGLE_WORKSPACE_PROJECT_ID env var)"
+      },
+      "debounceSeconds": {
+        "type": "number",
+        "default": 30,
+        "minimum": 0,
+        "description": "Seconds to wait for more emails before delivering a batch"
+      },
+      "maxBatchSize": {
+        "type": "number",
+        "default": 10,
+        "minimum": 1,
+        "description": "Max emails per batch delivery"
+      },
+      "paused": {
+        "type": "boolean",
+        "default": false,
+        "description": "Temporarily stop watching"
+      }
+    }
+  }
+}
