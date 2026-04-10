@@ -8,11 +8,13 @@ Zero tokens burned between emails. Agent only wakes when something arrives.
 
 ### 1. Install gws and gcloud
 
+Install `gws`:
+
 ```bash
 npm install -g @googleworkspace/cli
 ```
 
-You also need the [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed. In this setup, `gcloud` is required so `gws` can create and configure a Google Cloud project with the Gmail API enabled.
+Install the [gcloud CLI](https://cloud.google.com/sdk/docs/install) and make sure `gcloud` is available in your PATH.
 
 `gws` is the CLI the plugin runs at runtime. `gcloud` is a setup dependency for the initial Google Cloud configuration.
 
