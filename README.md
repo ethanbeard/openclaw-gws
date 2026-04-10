@@ -12,7 +12,11 @@ Zero tokens burned between emails. Agent only wakes when something arrives.
 npm install -g @googleworkspace/cli
 ```
 
-You also need the [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed. After installing, open a new terminal or run `source ~/.zshrc` so it's in your PATH.
+You also need the [gcloud CLI](https://cloud.google.com/sdk/docs/install) installed. In this setup, `gcloud` is required so `gws` can create and configure a Google Cloud project with the Gmail API enabled.
+
+`gws` is the CLI the plugin runs at runtime. `gcloud` is a setup dependency for the initial Google Cloud configuration.
+
+After installing both, open a new terminal or run `source ~/.zshrc` so they are in your PATH.
 
 ### 2. Set up OAuth
 
