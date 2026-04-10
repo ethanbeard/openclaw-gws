@@ -2,7 +2,7 @@ import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
 import { parseConfig } from "./src/config.js";
 import { GmailWatcher } from "./src/watcher.js";
 import { enqueue, clear } from "./src/debounce.js";
-import { Type } from "@sinclair/typebox";
+const emptyObject = { type: "object" as const, properties: {} };
 
 const plugin = {
   id: "gws",
@@ -16,7 +16,7 @@ const plugin = {
     api.registerTool({
       name: "gws_status",
       description: "Check Gmail watcher status: what's being watched, last event, errors",
-      parameters: Type.Object({}),
+      parameters: emptyObject,
       async execute() {
         if (!watcher) {
           return { content: [{ type: "text", text: "Gmail watcher not initialized." }] };
@@ -35,7 +35,7 @@ const plugin = {
     api.registerTool({
       name: "gws_pause",
       description: "Pause Gmail watching. Emails will not be delivered until resumed.",
-      parameters: Type.Object({}),
+      parameters: emptyObject,
       async execute() {
         if (watcher) watcher.stop();
 
@@ -55,7 +55,7 @@ const plugin = {
     api.registerTool({
       name: "gws_resume",
       description: "Resume Gmail watching after a pause.",
-      parameters: Type.Object({}),
+      parameters: emptyObject,
       async execute() {
         const config = api.runtime.config.loadConfig();
         const pluginConfig = config?.plugins?.entries?.gws?.config ?? {};
