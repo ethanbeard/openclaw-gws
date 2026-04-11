@@ -87,31 +87,13 @@ Use `agentId` if you want email deliveries routed to a specific OpenClaw agent i
 
 For multi-agent setups, set `agentId` explicitly so emails go to the intended agent.
 
-## Expose tools
-
-On current OpenClaw defaults, installed third-party plugin tools are often hidden by the active `tools.profile` until you explicitly allow them. To expose `gws_status`, `gws_pause`, and `gws_resume` in chat:
-
-```bash
-openclaw config set tools.alsoAllow '["openclaw-gws"]'
-```
-
-If you already use other plugin tool allowlist entries, include them too. For example:
-
-```bash
-openclaw config set tools.alsoAllow '["clawnet","openclaw-gws"]'
-```
-
 ## How it works
 
 The plugin spawns `gws gmail +watch` as a background process. When a new email arrives in your Gmail inbox, `gws` streams it as NDJSON via Google Pub/Sub. The plugin parses the event, extracts From/Subject/snippet, batches emails within a 30-second window, and delivers them to your agent via `openclaw agent --deliver`.
 
 If the `gws` process exits (network issue, auth expired), the plugin automatically restarts it with exponential backoff (1s, 2s, 4s, up to 60s).
 
-## Agent tools
-
-- `gws_status` — watcher state, last email, errors
-- `gws_pause` — stop watching
-- `gws_resume` — resume watching
+The plugin also ships a skill file that teaches the agent how to inspect and manage the watcher using normal OpenClaw config and logs.
 
 ## Troubleshooting
 
@@ -127,8 +109,8 @@ Make sure `gws` is in your PATH. The gateway inherits the PATH from whatever pro
 **Plugin installs are blocked as unsafe:**
 Current OpenClaw releases may block this plugin at install time because it uses `child_process` to run the local `gws` and `openclaw` CLIs. Install with `--dangerously-force-unsafe-install`.
 
-**The watcher runs, but `gws_*` tools do not appear in chat:**
-Add `openclaw-gws` to `tools.alsoAllow` (see "Expose tools" above), then restart the gateway.
+**How do I pause or resume the watcher?**
+Set `plugins.entries.openclaw-gws.config.paused` to `true` or `false`, then restart or reload the gateway.
 
 ## Development
 

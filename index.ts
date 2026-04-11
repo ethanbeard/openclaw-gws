@@ -2,7 +2,6 @@ import type { OpenClawPluginApi } from "openclaw/plugin-sdk/core";
 import { parseConfig } from "./src/config.js";
 import { GmailWatcher } from "./src/watcher.js";
 import { enqueue, clear } from "./src/debounce.js";
-const emptyObject = { type: "object" as const, properties: {} };
 
 const plugin = {
   id: "openclaw-gws",
@@ -59,61 +58,6 @@ const plugin = {
       config.plugins.entries[pluginId].config.paused = paused;
       api.runtime.config.writeConfigFile(config);
     }
-
-    // --- Tools ---
-
-    api.registerTool(() => ({
-      name: "gws_status",
-      description: "Check Gmail watcher status: what's being watched, last event, errors",
-      parameters: emptyObject,
-      async execute() {
-        if (!watcher) {
-          return { content: [{ type: "text", text: "Gmail watcher not running." }] };
-        }
-
-        const lines = [
-          `Status: ${watcher.status}`,
-          `Last email: ${watcher.lastEvent?.toISOString() ?? "none"}`,
-          `Last error: ${watcher.lastError ?? "none"}`,
-        ];
-
-        return { content: [{ type: "text", text: lines.join("\n") }] };
-      },
-    }));
-
-    api.registerTool(() => ({
-      name: "gws_pause",
-      description: "Pause Gmail watching. Emails will not be delivered until resumed.",
-      parameters: emptyObject,
-      async execute() {
-        if (watcher) {
-          watcher.stop();
-          watcher = null;
-        }
-        updatePausedConfig(true);
-        return { content: [{ type: "text", text: "Gmail watching paused." }] };
-      },
-    }));
-
-    api.registerTool(() => ({
-      name: "gws_resume",
-      description: "Resume Gmail watching after a pause.",
-      parameters: emptyObject,
-      async execute() {
-        updatePausedConfig(false);
-
-        if (!watcher) {
-          watcher = createAndStartWatcher();
-          if (!watcher) {
-            return { content: [{ type: "text", text: "Failed to start watcher. Check plugin config (project ID required)." }] };
-          }
-        } else {
-          watcher.start();
-        }
-
-        return { content: [{ type: "text", text: "Gmail watching resumed." }] };
-      },
-    }));
 
     // --- Background service ---
 
