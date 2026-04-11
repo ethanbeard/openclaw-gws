@@ -1,6 +1,15 @@
 // Minimal type stubs for OpenClaw plugin SDK.
 // At runtime, these are resolved by OpenClaw's jiti loader.
 declare module "openclaw/plugin-sdk/core" {
+  type ToolResult = Promise<{ content: Array<{ type: string; text: string }> }>;
+
+  interface OpenClawTool {
+    name: string;
+    description: string;
+    parameters: Record<string, unknown>;
+    execute(...args: any[]): ToolResult;
+  }
+
   interface OpenClawPluginApi {
     id?: string;
     pluginConfig?: Record<string, unknown>;
@@ -15,12 +24,7 @@ declare module "openclaw/plugin-sdk/core" {
         writeConfigFile(config: Record<string, any>): void;
       };
     };
-    registerTool(tool: {
-      name: string;
-      description: string;
-      parameters: Record<string, unknown>;
-      execute(...args: any[]): Promise<{ content: Array<{ type: string; text: string }> }>;
-    }): void;
+    registerTool(tool: OpenClawTool | ((ctx: { agentId?: string; sessionKey?: string }) => OpenClawTool)): void;
     registerService(service: {
       id: string;
       start(): void;

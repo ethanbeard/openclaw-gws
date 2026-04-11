@@ -5,7 +5,7 @@ import { enqueue, clear } from "./src/debounce.js";
 const emptyObject = { type: "object" as const, properties: {} };
 
 const plugin = {
-  id: "gws",
+  id: "openclaw-gws",
   name: "GWS Gmail Watcher",
   description: "Watch Gmail for new emails via gws CLI and deliver to your agent in real-time",
   register(api: OpenClawPluginApi) {
@@ -61,7 +61,7 @@ const plugin = {
 
     // --- Tools ---
 
-    api.registerTool({
+    api.registerTool(() => ({
       name: "gws_status",
       description: "Check Gmail watcher status: what's being watched, last event, errors",
       parameters: emptyObject,
@@ -78,9 +78,9 @@ const plugin = {
 
         return { content: [{ type: "text", text: lines.join("\n") }] };
       },
-    });
+    }));
 
-    api.registerTool({
+    api.registerTool(() => ({
       name: "gws_pause",
       description: "Pause Gmail watching. Emails will not be delivered until resumed.",
       parameters: emptyObject,
@@ -92,9 +92,9 @@ const plugin = {
         updatePausedConfig(true);
         return { content: [{ type: "text", text: "Gmail watching paused." }] };
       },
-    });
+    }));
 
-    api.registerTool({
+    api.registerTool(() => ({
       name: "gws_resume",
       description: "Resume Gmail watching after a pause.",
       parameters: emptyObject,
@@ -112,7 +112,7 @@ const plugin = {
 
         return { content: [{ type: "text", text: "Gmail watching resumed." }] };
       },
-    });
+    }));
 
     // --- Background service ---
 
