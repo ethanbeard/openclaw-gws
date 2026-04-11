@@ -72,8 +72,13 @@ export class GmailWatcher {
       this.restartTimer = null;
     }
     if (this.proc) {
-      this.proc.kill();
+      const proc = this.proc;
       this.proc = null;
+      proc.kill("SIGTERM");
+      // Force-kill if still alive after 3 seconds
+      setTimeout(() => {
+        try { proc.kill("SIGKILL"); } catch {}
+      }, 3000);
     }
   }
 
