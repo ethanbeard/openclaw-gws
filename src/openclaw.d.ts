@@ -25,6 +25,12 @@ declare module "openclaw/plugin-sdk/core" {
       };
     };
     registerTool(tool: OpenClawTool | ((ctx: { agentId?: string; sessionKey?: string }) => OpenClawTool)): void;
+    registerCommand(command: {
+      name: string;
+      description: string;
+      acceptsArgs?: boolean;
+      handler(ctx: { args?: string }): Promise<{ text: string }> | { text: string };
+    }): void;
     registerService(service: {
       id: string;
       start(): void;

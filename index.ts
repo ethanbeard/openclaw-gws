@@ -59,6 +59,61 @@ const plugin = {
       api.runtime.config.writeConfigFile(config);
     }
 
+    function statusText() {
+      if (!watcher) {
+        return "Gmail watcher not running.";
+      }
+
+      const lines = [
+        `Status: ${watcher.status}`,
+        `Last email: ${watcher.lastEvent?.toISOString() ?? "none"}`,
+        `Last error: ${watcher.lastError ?? "none"}`,
+      ];
+
+      return lines.join("\n");
+    }
+
+    api.registerCommand({
+      name: "gws",
+      description: "Manage the Gmail watcher plugin. Use '/gws status', '/gws pause', or '/gws resume'.",
+      acceptsArgs: true,
+      handler: async (ctx: { args?: string }) => {
+        const args = (ctx.args ?? "").trim();
+
+        if (args === "status") {
+          return { text: statusText() };
+        }
+
+        if (args === "pause") {
+          if (watcher) {
+            watcher.stop();
+            watcher = null;
+          }
+          updatePausedConfig(true);
+          return { text: "Gmail watching paused." };
+        }
+
+        if (args === "resume") {
+          updatePausedConfig(false);
+
+          if (!watcher) {
+            watcher = createAndStartWatcher();
+            if (!watcher) {
+              return { text: "Failed to start watcher. Check plugin config (project ID required)." };
+            }
+          } else {
+            watcher.start();
+          }
+
+          return { text: "Gmail watching resumed." };
+        }
+
+        return {
+          text: "Usage: /gws status | /gws pause | /gws resume",
+        };
+      },
+    });
+
     // --- Background service ---
 
     api.registerService({

@@ -97,6 +97,14 @@ If the `gws` process exits (network issue, auth expired), the plugin automatical
 
 The plugin also ships a skill file that teaches the agent how to inspect and manage the watcher using normal OpenClaw config and logs.
 
+## Chat Commands
+
+After install, you can control the watcher from chat with:
+
+- `/gws status`
+- `/gws pause`
+- `/gws resume`
+
 ## Troubleshooting
 
 **"No credentials found" errors in gateway log:**
@@ -112,7 +120,7 @@ Make sure `gws` is in your PATH. The gateway inherits the PATH from whatever pro
 Current OpenClaw releases may block this plugin at install time because it uses `child_process` to run the local `gws` and `openclaw` CLIs. Install with `--dangerously-force-unsafe-install`.
 
 **How do I pause or resume the watcher?**
-Set `plugins.entries.openclaw-gws.config.paused` to `true` or `false`, then restart or reload the gateway.
+Use `/gws pause` or `/gws resume` in chat. You can also set `plugins.entries.openclaw-gws.config.paused` manually, then restart or reload the gateway.
 
 ## Development
 

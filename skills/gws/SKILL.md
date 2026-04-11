@@ -13,6 +13,7 @@ Emails are delivered in real-time. You do not need to poll or check for new mess
 
 Operational notes:
 
+- Prefer the plugin chat commands for direct control: `/gws status`, `/gws pause`, `/gws resume`.
 - To inspect configuration, read `plugins.entries.openclaw-gws.config` from the OpenClaw config.
 - To pause watching, set `plugins.entries.openclaw-gws.config.paused` to `true` and reload or restart the gateway.
 - To resume watching, set `plugins.entries.openclaw-gws.config.paused` to `false` and reload or restart the gateway.
