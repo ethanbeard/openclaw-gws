@@ -10,10 +10,11 @@ const plugin = {
   description: "Watch Gmail for new emails via gws CLI and deliver to your agent in real-time",
   register(api: OpenClawPluginApi) {
     let watcher: GmailWatcher | null = null;
+    const pluginId = "openclaw-gws";
 
     function loadCurrentPluginConfig(): Record<string, unknown> {
       const config = api.runtime.config.loadConfig() ?? {};
-      const persisted = config.plugins?.entries?.["openclaw-gws"]?.config ?? {};
+      const persisted = config.plugins?.entries?.[pluginId]?.config ?? {};
       return {
         ...(api.pluginConfig ?? {}),
         ...persisted,
@@ -53,9 +54,9 @@ const plugin = {
       const config = api.runtime.config.loadConfig() ?? {};
       config.plugins ??= {};
       config.plugins.entries ??= {};
-      config.plugins.entries["openclaw-gws"] ??= {};
-      config.plugins.entries["openclaw-gws"].config ??= {};
-      config.plugins.entries["openclaw-gws"].config.paused = paused;
+      config.plugins.entries[pluginId] ??= {};
+      config.plugins.entries[pluginId].config ??= {};
+      config.plugins.entries[pluginId].config.paused = paused;
       api.runtime.config.writeConfigFile(config);
     }
 
