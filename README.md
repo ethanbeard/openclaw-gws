@@ -60,7 +60,7 @@ openclaw plugins install openclaw-gws
 ## Configure
 
 ```bash
-openclaw config set plugins.entries.gws.config.project YOUR_PROJECT_ID
+openclaw config set plugins.entries.openclaw-gws.config.project YOUR_PROJECT_ID
 ```
 
 Or set the environment variable `GOOGLE_WORKSPACE_PROJECT_ID`.
@@ -70,9 +70,9 @@ Restart or reload the gateway after configuring. If the plugin is already runnin
 Optional settings:
 
 ```bash
-openclaw config set plugins.entries.gws.config.agentId main
-openclaw config set plugins.entries.gws.config.debounceSeconds 30
-openclaw config set plugins.entries.gws.config.maxBatchSize 10
+openclaw config set plugins.entries.openclaw-gws.config.agentId main
+openclaw config set plugins.entries.openclaw-gws.config.debounceSeconds 30
+openclaw config set plugins.entries.openclaw-gws.config.maxBatchSize 10
 ```
 
 Use `agentId` if you want email deliveries routed to a specific OpenClaw agent instead of the default `main`.

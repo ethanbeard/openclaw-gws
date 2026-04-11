@@ -1,5 +1,5 @@
 {
-  "id": "gws",
+  "id": "openclaw-gws",
   "name": "GWS Gmail Watcher",
   "description": "Watch Gmail for new emails via gws CLI and deliver to your agent in real-time",
   "version": "0.1.0",

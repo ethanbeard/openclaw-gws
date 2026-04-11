@@ -13,7 +13,7 @@ const plugin = {
 
     function loadCurrentPluginConfig(): Record<string, unknown> {
       const config = api.runtime.config.loadConfig() ?? {};
-      const persisted = config.plugins?.entries?.gws?.config ?? {};
+      const persisted = config.plugins?.entries?.["openclaw-gws"]?.config ?? {};
       return {
         ...(api.pluginConfig ?? {}),
         ...persisted,
@@ -53,9 +53,9 @@ const plugin = {
       const config = api.runtime.config.loadConfig() ?? {};
       config.plugins ??= {};
       config.plugins.entries ??= {};
-      config.plugins.entries.gws ??= {};
-      config.plugins.entries.gws.config ??= {};
-      config.plugins.entries.gws.config.paused = paused;
+      config.plugins.entries["openclaw-gws"] ??= {};
+      config.plugins.entries["openclaw-gws"].config ??= {};
+      config.plugins.entries["openclaw-gws"].config.paused = paused;
       api.runtime.config.writeConfigFile(config);
     }
 
