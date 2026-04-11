@@ -3,7 +3,7 @@
   "name": "GWS Gmail Watcher",
   "description": "Watch Gmail for new emails via gws CLI and deliver to your agent in real-time",
   "version": "0.1.0",
-  "skills": ["skills"],
+  "skills": ["./skills"],
   "configSchema": {
     "type": "object",
     "properties": {
