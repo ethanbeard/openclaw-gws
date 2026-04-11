@@ -1,3 +1,8 @@
+---
+name: gws
+description: Use Google Workspace watcher workflows for Gmail delivery and watcher management in OpenClaw.
+---
+
 # Gmail Watcher
 
 You are connected to a real-time Gmail stream via the Google Workspace CLI (gws).
