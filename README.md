@@ -62,7 +62,7 @@ openclaw plugins install --dangerously-force-unsafe-install openclaw-gws
 For local testing from a tarball:
 
 ```bash
-openclaw plugins install --dangerously-force-unsafe-install ~/openclaw-gws-0.1.0.tgz
+openclaw plugins install --dangerously-force-unsafe-install ~/openclaw-gws-0.1.1.tgz
 ```
 
 Reinstalling the plugin does not preserve its config entry. If you uninstall and reinstall, set `plugins.entries.openclaw-gws.config.project` again before expecting the watcher to start.
@@ -95,7 +95,7 @@ The plugin spawns `gws gmail +watch` as a background process. When a new email a
 
 If the `gws` process exits (network issue, auth expired), the plugin automatically restarts it with exponential backoff (1s, 2s, 4s, up to 60s).
 
-The plugin also ships a skill file that teaches the agent how to inspect and manage the watcher using normal OpenClaw config and logs.
+The plugin also ships a `gws` skill and `/gws` chat commands for watcher management. It does not expose first-class model tools.
 
 ## Chat Commands
 
@@ -106,6 +106,9 @@ After install, you can control the watcher from chat with:
 - `/gws resume`
 
 ## Troubleshooting
+
+**I installed the plugin, but nothing happens:**
+Make sure you set `plugins.entries.openclaw-gws.config.project` and restarted the gateway. A fresh install does not infer your Google Cloud project automatically.
 
 **"No credentials found" errors in gateway log:**
 Re-run auth with file-based storage: `GOOGLE_WORKSPACE_CLI_KEYRING_BACKEND=file gws auth login`
