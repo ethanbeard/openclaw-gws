@@ -65,6 +65,8 @@ For local testing from a tarball:
 openclaw plugins install --dangerously-force-unsafe-install ~/openclaw-gws-0.1.0.tgz
 ```
 
+Reinstalling the plugin does not preserve its config entry. If you uninstall and reinstall, set `plugins.entries.openclaw-gws.config.project` again before expecting the watcher to start.
+
 ## Configure
 
 ```bash
